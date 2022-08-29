@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 public class Player_Move : MonoBehaviour
 {
     //the vector that the player moves towards
     private Vector3 dir = new Vector3(0,0,0);
     private Vector3 jumpDir = new Vector3 (1,1,0);
-    private float jumpForce = 6F;
+    private float jumpForce = 8F;
     private Vector3 maxJump = new Vector3(12f,12,0);
     //boolean used for subtracting the Y component of dir from itself for only 1 frame
     private Vector3 forceAdded = new Vector3(0,0,0);
@@ -26,7 +25,24 @@ public class Player_Move : MonoBehaviour
     void Update()
     {
         CheckInput();
+        CheckGround();
+    }
+    void CheckGround()
+    {
+        RaycastHit hit;  
+        Vector3 offset = new Vector3(0,con.height/2,0);
 
+        if (Physics.Raycast(transform.position,Vector3.down,out hit,con.height/2,8))
+        {
+            //Debug.DrawRay(transform.position,Vector3.down,Color.red,0);
+            Debug.DrawLine(transform.position,(transform.position - offset),Color.green,0);
+            Debug.Log("Contact");
+        }else
+        {
+        Debug.DrawLine(transform.position,(transform.position - offset),Color.red,0);
+
+
+        }
     }
     void FixedUpdate()
     {
@@ -60,7 +76,6 @@ public class Player_Move : MonoBehaviour
             }
         }
     }
-
     void CheckInput()
     {
         ChargeJump();
@@ -95,31 +110,44 @@ public class Player_Move : MonoBehaviour
             }
         }
     }
+    void CancelY()
+    {
+        if(dir.y > 0)
+        {
+            Vector3 cancelY = new Vector3(0,dir.y * -1,0);
+            dir += cancelY * Time.fixedDeltaTime;
+            Debug.Log("Y Canceled");
+        }
+    }
     void Jump(Vector3 force, float direction)
     {
         if(direction == 1)
         {
-            if(dir.y > 0)
-            {
-                Vector3 cancelY = new Vector3(0,dir.y,0);
-                dir += (force + cancelY) * Time.fixedDeltaTime;
-            }else
-            {
-                dir += force*Time.fixedDeltaTime;
-            }
+            // if(dir.y > 0)
+            // {
+            //     Vector3 cancelY = new Vector3(0,dir.y,0);
+            //     dir += (force + cancelY) * Time.fixedDeltaTime;
+            // }else
+            // {
+            //     dir += force*Time.fixedDeltaTime;
+            // }
+
+            dir += force*Time.fixedDeltaTime;
         }
         if (direction == 0)
         {
             //Creating new vector to invert force in x axis
             Vector3 temp = new Vector3 (-force.x,force.y,force.z);
-            if(dir.y > 0)
-            {
-                Vector3 cancelY = new Vector3(0,dir.y,0);
-                dir += (force + cancelY) * Time.fixedDeltaTime;
-            }else
-            {
-                dir += temp*Time.fixedDeltaTime;
-            }
+            // if(dir.y > 0)
+            // {
+            //     Vector3 cancelY = new Vector3(0,dir.y,0);
+            //     dir += (force + cancelY) * Time.fixedDeltaTime;
+            // }else
+            // {
+            //     dir += temp*Time.fixedDeltaTime;
+            // }
+            
+            dir += temp*Time.fixedDeltaTime;
         }
     }
     void Preprare()
