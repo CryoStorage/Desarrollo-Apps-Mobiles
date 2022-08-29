@@ -8,12 +8,12 @@ public class Player_Move : MonoBehaviour
     private Vector3 dir = new Vector3(0,0,0);
     private Vector3 jumpDir = new Vector3 (1,1,0);
     private float jumpForce = 6F;
-    private float maxJump = 12f;
+    private Vector3 maxJump = new Vector3(12f,12,0);
     //boolean used for subtracting the Y component of dir from itself for only 1 frame
-    bool cancelY = false;
     private Vector3 forceAdded = new Vector3(0,0,0);
     private float speed = .3f;
     private float maxSpeed = .50f;
+    private float friction = .50f;
     private Vector3 g = new Vector3(0,1f,0);
 
     CharacterController con;
@@ -22,90 +22,106 @@ public class Player_Move : MonoBehaviour
     {
         Preprare();
     }
-
     // Update is called once per frame
     void Update()
     {
         CheckInput();
 
     }
-
     void FixedUpdate()
     {
         Move();
-        
     }
-
     void Move()
     {
         Mathf.Clamp(dir.magnitude,-maxSpeed,maxSpeed);
         Gravity();
         con.Move(dir);
-
     }
-    
-
     void Gravity()
     {
-
         if (! con.isGrounded)
         {
             dir -= ((g*speed) * (Time.fixedDeltaTime));
         }
-        if (cancelY == true);
+        if (con.isGrounded)
         {
-            Vector3 temp = new Vector3(0,dir.y,0);
-            dir =- temp;
-            cancelY = false;
+            Vector3 frictionVector = new Vector3(friction,0,0);
+            if (dir.x != 0)
+            {
+                if (dir.x > 0)
+                {
+                    dir -= frictionVector*Time.fixedDeltaTime;
+                }
+                if(dir.x < 0)
+                {
+                    dir += frictionVector*Time.fixedDeltaTime;
+                }
+            }
         }
-
-
     }
 
     void CheckInput()
     {
-        float mousePos = Input.mousePosition.x;
-        ChargeJump(0);
-
+        ChargeJump();
     }
-
-    void ChargeJump(int direction)
+    void ChargeJump()
     {
-        if (Input.GetMouseButtonDown(0))
+        float mousePos = Input.mousePosition.x;
+        
+        if (Input.GetMouseButtonDown(0) && con.isGrounded)
         {
             dir = Vector3.zero;
-            Debug.Log("pressed m1");
-
         }
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0) && con.isGrounded)
         {
-            forceAdded += jumpDir*jumpForce * Time.fixedDeltaTime;
-            Debug.Log("holding m1");
-
+            if (forceAdded.magnitude < maxJump.magnitude)
+            {
+                forceAdded += jumpDir * jumpForce * Time.fixedDeltaTime;   
+            }
         }
-        if (Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0) && con.isGrounded)
         {
-            Jump(forceAdded);
-            Debug.Log("released m2");
-            
+            if(mousePos < Screen.width/2)
+            {
+                Jump(forceAdded,0);
+                forceAdded = Vector3.zero;
+                //Debug.Log("Jump-Left");
+            }else
+            {
+                Jump(forceAdded,1);
+                forceAdded = Vector3.zero;
+                //Debug.Log("Jump-Right");
+            }
         }
     }
-
-    void Jump(Vector3 force)
+    void Jump(Vector3 force, float direction)
     {
-        if (force.magnitude >= maxJump)
+        if(direction == 1)
         {
-
-            dir += force.normalized* maxJump * Time.fixedDeltaTime;
-        }else
-        {
-
-            dir += force*Time.fixedDeltaTime;
-            
+            if(dir.y > 0)
+            {
+                Vector3 cancelY = new Vector3(0,dir.y,0);
+                dir += (force + cancelY) * Time.fixedDeltaTime;
+            }else
+            {
+                dir += force*Time.fixedDeltaTime;
+            }
         }
-
+        if (direction == 0)
+        {
+            //Creating new vector to invert force in x axis
+            Vector3 temp = new Vector3 (-force.x,force.y,force.z);
+            if(dir.y > 0)
+            {
+                Vector3 cancelY = new Vector3(0,dir.y,0);
+                dir += (force + cancelY) * Time.fixedDeltaTime;
+            }else
+            {
+                dir += temp*Time.fixedDeltaTime;
+            }
+        }
     }
-
     void Preprare()
     {
         Application.targetFrameRate = 60;
