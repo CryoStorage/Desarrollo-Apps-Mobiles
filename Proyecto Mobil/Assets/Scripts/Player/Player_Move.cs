@@ -12,9 +12,9 @@ public class Player_Move : MonoBehaviour
     private Vector3 forceAdded = new Vector3(0,0,0);
     private float speed = .3f;
     private float maxSpeed = .50f;
-    private float friction = .50f;
+    private float friction = 10f;
     private Vector3 g = new Vector3(0,1f,0);
-
+    private bool sticky = false;
     CharacterController con;
     // Start is called before the first frame update
     void Start()
@@ -27,22 +27,40 @@ public class Player_Move : MonoBehaviour
         CheckInput();
         CheckGround();
     }
+
+    void Stick()
+    {
+        sticky = true;
+        if (sticky)
+        {
+            Debug.Log("stick");
+            dir = Vector3.zero;
+            
+        }
+
+    }
     void CheckGround()
     {
-        RaycastHit hit;  
-        Vector3 offset = new Vector3(0,con.height/2,0);
-
-        if (Physics.Raycast(transform.position,Vector3.down,out hit,con.height/2,8))
+        RaycastHit hit;
+        Vector3 offset = new Vector3(0,.5f,0);
+        if(Physics.Raycast(transform.position, Vector3.down,out hit, con.height/2f+.1f) && hit.collider.tag == "Floor")
         {
-            //Debug.DrawRay(transform.position,Vector3.down,Color.red,0);
-            Debug.DrawLine(transform.position,(transform.position - offset),Color.green,0);
-            Debug.Log("Contact");
-        }else
-        {
-        Debug.DrawLine(transform.position,(transform.position - offset),Color.red,0);
-
-
+            CancelY();
         }
+        for (int i = 0; i < 1; i++)
+        {
+            Physics.Raycast(transform.position, Vector3.right,out hit, con.radius+.1f);
+            if (hit.collider != null && hit.collider.tag == "Wall")
+            {
+                Stick();
+            }
+            Physics.Raycast(transform.position, -Vector3.right,out hit, con.radius+.1f);
+            if (hit.collider != null && hit.collider.tag == "Wall")
+            {
+                Stick();
+            }
+        }
+       
     }
     void FixedUpdate()
     {
@@ -62,17 +80,10 @@ public class Player_Move : MonoBehaviour
         }
         if (con.isGrounded)
         {
-            Vector3 frictionVector = new Vector3(friction,0,0);
+            Vector3 frictionVector = new Vector3(dir.x * friction,0,0);
             if (dir.x != 0)
             {
-                if (dir.x > 0)
-                {
-                    dir -= frictionVector*Time.fixedDeltaTime;
-                }
-                if(dir.x < 0)
-                {
-                    dir += frictionVector*Time.fixedDeltaTime;
-                }
+                dir -= frictionVector*Time.fixedDeltaTime;
             }
         }
     }
@@ -100,11 +111,13 @@ public class Player_Move : MonoBehaviour
             if(mousePos < Screen.width/2)
             {
                 Jump(forceAdded,0);
+                sticky = false;
                 forceAdded = Vector3.zero;
                 //Debug.Log("Jump-Left");
             }else
             {
                 Jump(forceAdded,1);
+                sticky = false;
                 forceAdded = Vector3.zero;
                 //Debug.Log("Jump-Right");
             }
@@ -112,11 +125,10 @@ public class Player_Move : MonoBehaviour
     }
     void CancelY()
     {
-        if(dir.y > 0)
+        if(dir.y != 0 && con.isGrounded)
         {
-            Vector3 cancelY = new Vector3(0,dir.y * -1,0);
-            dir += cancelY * Time.fixedDeltaTime;
-            Debug.Log("Y Canceled");
+            Vector3 cancelY = new Vector3(0,dir.y * 10,0);
+            dir -= cancelY * Time.fixedDeltaTime;
         }
     }
     void Jump(Vector3 force, float direction)
