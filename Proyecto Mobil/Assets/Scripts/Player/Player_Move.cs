@@ -15,6 +15,7 @@ public class Player_Move : MonoBehaviour
     private float friction = 10f;
     private Vector3 g = new Vector3(0,1f,0);
     private bool sticky = false;
+    private bool wallcheck = true;
     CharacterController con;
     // Start is called before the first frame update
     void Start()
@@ -26,6 +27,11 @@ public class Player_Move : MonoBehaviour
     {
         CheckInput();
         CheckGround();
+        CheckWall();
+    }
+    void FixedUpdate()
+    {
+        Move();
     }
 
     void Stick()
@@ -46,25 +52,32 @@ public class Player_Move : MonoBehaviour
         if(Physics.Raycast(transform.position, Vector3.down,out hit, con.height/2f+.1f) && hit.collider.tag == "Floor")
         {
             CancelY();
-        }
-        for (int i = 0; i < 1; i++)
-        {
-            Physics.Raycast(transform.position, Vector3.right,out hit, con.radius+.1f);
-            if (hit.collider != null && hit.collider.tag == "Wall")
-            {
-                Stick();
-            }
-            Physics.Raycast(transform.position, -Vector3.right,out hit, con.radius+.1f);
-            if (hit.collider != null && hit.collider.tag == "Wall")
-            {
-                Stick();
-            }
+
         }
        
     }
-    void FixedUpdate()
+
+    void CheckWall()
     {
-        Move();
+        RaycastHit hit;
+        if (wallcheck)
+        {
+            for (int i = 0; i < 1; i++)
+            {
+                Physics.Raycast(transform.position, Vector3.right,out hit, con.radius+.1f);
+                if (hit.collider != null && hit.collider.tag == "Wall")
+                {
+                    Stick();
+                }
+                Physics.Raycast(transform.position, -Vector3.right,out hit, con.radius+.1f);
+                if (hit.collider != null && hit.collider.tag == "Wall")
+                {
+                    Stick();
+                }
+            }
+        }
+
+
     }
     void Move()
     {
@@ -74,7 +87,7 @@ public class Player_Move : MonoBehaviour
     }
     void Gravity()
     {
-        if (! con.isGrounded)
+        if (! con.isGrounded | sticky)
         {
             dir -= ((g*speed) * (Time.fixedDeltaTime));
         }
@@ -95,7 +108,7 @@ public class Player_Move : MonoBehaviour
     {
         float mousePos = Input.mousePosition.x;
         
-        if (Input.GetMouseButtonDown(0) && con.isGrounded)
+        if (Input.GetMouseButtonDown(0) && con.isGrounded )
         {
             dir = Vector3.zero;
         }
@@ -110,24 +123,40 @@ public class Player_Move : MonoBehaviour
         {
             if(mousePos < Screen.width/2)
             {
-                Jump(forceAdded,0);
+                StopAllCoroutines();
+                wallcheck = false;
                 sticky = false;
+                Jump(forceAdded,0);
                 forceAdded = Vector3.zero;
+                StartCoroutine(corCheckWall());
                 //Debug.Log("Jump-Left");
             }else
             {
-                Jump(forceAdded,1);
+                StopAllCoroutines();
+                wallcheck = false;
                 sticky = false;
+                Jump(forceAdded,1);
                 forceAdded = Vector3.zero;
+                StartCoroutine(corCheckWall());
                 //Debug.Log("Jump-Right");
             }
         }
     }
+
+    IEnumerator corCheckWall()
+    {
+        wallcheck = true;
+        yield return new WaitForEndOfFrame();
+        Debug.Log("EndOfFrame");
+
+    }
+    
     void CancelY()
     {
         if(dir.y != 0 && con.isGrounded)
         {
-            Vector3 cancelY = new Vector3(0,dir.y * 10,0);
+
+            Vector3 cancelY = new Vector3(0,dir.y,0);
             dir -= cancelY * Time.fixedDeltaTime;
         }
     }
@@ -135,30 +164,12 @@ public class Player_Move : MonoBehaviour
     {
         if(direction == 1)
         {
-            // if(dir.y > 0)
-            // {
-            //     Vector3 cancelY = new Vector3(0,dir.y,0);
-            //     dir += (force + cancelY) * Time.fixedDeltaTime;
-            // }else
-            // {
-            //     dir += force*Time.fixedDeltaTime;
-            // }
-
             dir += force*Time.fixedDeltaTime;
         }
         if (direction == 0)
         {
             //Creating new vector to invert force in x axis
             Vector3 temp = new Vector3 (-force.x,force.y,force.z);
-            // if(dir.y > 0)
-            // {
-            //     Vector3 cancelY = new Vector3(0,dir.y,0);
-            //     dir += (force + cancelY) * Time.fixedDeltaTime;
-            // }else
-            // {
-            //     dir += temp*Time.fixedDeltaTime;
-            // }
-            
             dir += temp*Time.fixedDeltaTime;
         }
     }
