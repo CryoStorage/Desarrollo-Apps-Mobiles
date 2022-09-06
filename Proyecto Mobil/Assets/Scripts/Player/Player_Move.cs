@@ -15,8 +15,8 @@ public class Player_Move : MonoBehaviour
     private float friction = 10f;
     private Vector3 g = new Vector3(0,1f,0);
     private bool sticky = false;
-    private bool wallcheck = true;
     private bool grounded = false;
+    private bool wallcheck = true;
     CharacterController con;
     // Start is called before the first frame update
     void Start()
@@ -30,8 +30,8 @@ public class Player_Move : MonoBehaviour
         CheckGround();
         CheckWall();
         Stick();
-        //Debug.Log("Sticky is : " + sticky);
-        Debug.Log("grounded is : " + grounded);
+        Debug.Log("Sticky is : " + sticky + "  grounded is : " + grounded);
+
     }
     void FixedUpdate()
     {
@@ -64,37 +64,34 @@ public class Player_Move : MonoBehaviour
     }
     void CheckWall()
     {
-        RaycastHit hit;
-        if (wallcheck)
+        if(wallcheck)
         {
+            RaycastHit hit;
             for (int i = 0; i < 1; i++)
             {
-                Physics.Raycast(transform.position, Vector3.right,out hit, con.radius+.1f);
-                Debug.Log("CastingRays");
-                if (hit.collider != null && hit.collider.tag == "Wall")
-                {
-                    sticky = true;
-                }else{sticky = false;}
-                
                 Physics.Raycast(transform.position, -Vector3.right,out hit, con.radius+.1f);
                 if (hit.collider != null && hit.collider.tag == "Wall")
                 {
                     sticky = true;
-                }else{sticky = false;}
-                
+                }
+                Physics.Raycast(transform.position, Vector3.right,out hit, con.radius+.1f);
+                if (hit.collider != null && hit.collider.tag == "Wall")
+                {
+                    sticky = true;
+                } 
             }
-        }else
-        {
-            Debug.Log("Not CastingRays");
-        } 
-
+            
+        }
     }
-
-    IEnumerator corWallCheck()
+    IEnumerator corUnstickAndGround()
     {
+        sticky = false;
         wallcheck = false;
+        grounded = true;
+        Debug.Log("Changing values and waiting");
         yield return new WaitForEndOfFrame();
         wallcheck = true;
+        Debug.Log("Done Waiting");
     }
     void Gravity()
     {
@@ -118,8 +115,7 @@ public class Player_Move : MonoBehaviour
     void ChargeJump()
     {
         float mousePos = Input.mousePosition.x;
-        
-        if (Input.GetMouseButtonDown(0) && grounded )
+        if (Input.GetMouseButtonDown(0) && grounded)
         {
             // removes previous momentum
             dir = Vector3.zero;
@@ -146,6 +142,34 @@ public class Player_Move : MonoBehaviour
                 forceAdded = Vector3.zero;
             }
         }
+
+        if (Input.GetMouseButtonDown(0) && sticky)
+        {
+            // removes previous momentum
+            dir = Vector3.zero;
+        }
+        if (Input.GetMouseButton(0) && sticky)
+        {
+            //Limits jump force to asigned max value
+            if (forceAdded.magnitude < maxJump.magnitude)
+            {
+                forceAdded += jumpDir * jumpForce * Time.fixedDeltaTime;   
+            }
+        }
+        if (Input.GetMouseButtonUp(0) && sticky)
+        {
+            //Checks screen position of the cursor and calls jump with..
+            //  it's corresponding value then resets forceAdded to zero
+            if(mousePos < Screen.width/2)
+            {
+                Jump(forceAdded,0);
+                forceAdded = Vector3.zero;
+            }else
+            {
+                Jump(forceAdded,1);
+                forceAdded = Vector3.zero;
+            }
+        }
     }
     void Jump(Vector3 force, float direction)
     {
@@ -153,19 +177,21 @@ public class Player_Move : MonoBehaviour
         {
             //jumps right
             StopAllCoroutines();
-            StartCoroutine(corWallCheck());
-            
+            StartCoroutine(corUnstickAndGround());
             dir += force*Time.fixedDeltaTime;
+            Debug.Log("Jump!");
+
 
         }
         if (direction == 0)
         {
             //Creating new vector to invert force in x axis(jumps left)
             Vector3 temp = new Vector3 (-force.x,force.y,force.z);
-
             StopAllCoroutines();
-            StartCoroutine(corWallCheck());
+            StartCoroutine(corUnstickAndGround());
             dir += temp*Time.fixedDeltaTime;
+            Debug.Log("Jump!");
+
         }
     }
     void Move()
@@ -183,7 +209,7 @@ public class Player_Move : MonoBehaviour
             try
             {
                 con = GetComponent<CharacterController>();
-            }  catch { Debug.LogWarning("could not add CharacterController"); }
+            }  catch { Debug.LogWarning("could not get CharacterController"); }
         }
     }
 }
