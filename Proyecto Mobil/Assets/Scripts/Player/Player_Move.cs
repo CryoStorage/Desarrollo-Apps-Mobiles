@@ -5,7 +5,7 @@ public class Player_Move : MonoBehaviour
     //the vector that the player moves towards
     private Vector3 dir = new Vector3(0,0,0);
     private Vector3 jumpDir = new Vector3 (1,1,0);
-    [SerializeField] private float jumpForce = 10F;
+    [SerializeField] private float jumpForce = 12F;
     private Vector3 maxJump = new Vector3(12f,12,0);
     //boolean used for subtracting the Y component of dir from itself for only 1 frame
     private Vector3 forceAdded = new Vector3(0,0,0);
@@ -32,11 +32,11 @@ public class Player_Move : MonoBehaviour
         CheckGround();
         CheckWall();
         Stick();
+        Move();
         // Debug.Log("Sticky is : " + sticky + "  grounded is : " + grounded);
     }
     void FixedUpdate()
     {
-        Move();
         Debug.Log(checkPointManager.currentCheckPoint);
     }
 
