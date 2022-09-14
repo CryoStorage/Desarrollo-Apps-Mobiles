@@ -3,18 +3,16 @@ using UnityEngine;
 public class Player_Move : MonoBehaviour
 {
     //the vector that the player moves towards
-    private Vector3 dir = new Vector3(0,0,0);
+    private Vector3 dir = Vector3.zero;
     private Vector3 jumpDir = new Vector3 (1,1,0);
-    [SerializeField] private float jumpForce = 12F;
+    [SerializeField] private float jumpForce;
+    private Vector3 forceAdded = Vector3.zero;
     private Vector3 maxJump = new Vector3(12f,12,0);
-    //boolean used for subtracting the Y component of dir from itself for only 1 frame
-    private Vector3 forceAdded = new Vector3(0,0,0);
     private float speed = .3f;
-    // private float maxSpeed = .50f;
     private float friction = 10f;
     private Vector3 g = new Vector3(0,1f,0);
     private bool sticky;
-    [HideInInspector]public bool grounded;
+    private bool grounded;
     private bool wallcheck = true;
     CharacterController con;
 
@@ -31,15 +29,9 @@ public class Player_Move : MonoBehaviour
         CheckInput();
         CheckGround();
         CheckWall();
-        Stick();
+        CheckSticky();
         Move();
-        // Debug.Log("Sticky is : " + sticky + "  grounded is : " + grounded);
     }
-    void FixedUpdate()
-    {
-        Debug.Log(checkPointManager.currentCheckPoint);
-    }
-
     public void Respawn()
     {
         con.Move(checkPointManager.currentCheckPoint);
@@ -49,9 +41,8 @@ public class Player_Move : MonoBehaviour
     {
         Gravity();
         con.Move(dir);
-
     }
-    void Stick()
+    void CheckSticky()
     {
         if (sticky)
         {
@@ -61,7 +52,6 @@ public class Player_Move : MonoBehaviour
     void CheckGround()
     {
         RaycastHit hit;
-
         if(Physics.Raycast(transform.position, Vector3.down,out hit, con.height/2f+.1f, layerMask, QueryTriggerInteraction.Ignore) && (hit.collider.CompareTag("Floor")))
         {
             grounded = true;
@@ -81,30 +71,27 @@ public class Player_Move : MonoBehaviour
     }
     void CheckWall()
     {
-        if(wallcheck)
+        if (!wallcheck) return;
+        for (int i = 0; i < 1; i++)
         {
-            for (int i = 0; i < 1; i++)
+            RaycastHit hit;
+            Physics.Raycast(transform.position, -Vector3.right,out hit, con.radius+.1f);
+            if (hit.collider && hit.collider.CompareTag("Wall"))
             {
-                RaycastHit hit;
-                Physics.Raycast(transform.position, -Vector3.right,out hit, con.radius+.1f);
-                if (hit.collider && hit.collider.CompareTag("Wall"))
-                {
-                    sticky = true;
-                }
-                else
-                {
-                    sticky = false;
-                }
-                Physics.Raycast(transform.position, Vector3.right,out hit, con.radius+.1f);
-                if (hit.collider && hit.collider.CompareTag("Wall"))
-                {
-                    sticky = true;
-                }
-               
+                sticky = true;
+            }
+            else
+            {
+                sticky = false;
+            }
+            Physics.Raycast(transform.position, Vector3.right,out hit, con.radius+.1f);
+            if (hit.collider && hit.collider.CompareTag("Wall"))
+            {
+                sticky = true;
             }
         }
     }
-    IEnumerator CorUnstickAndGround()
+    private IEnumerator CorUnstickAndGround()
     {
         //unsticks the player and sets grounded to true...
         // during the frame when jump is called.
@@ -120,13 +107,11 @@ public class Player_Move : MonoBehaviour
         {
             dir -= (g * (Time.fixedDeltaTime * speed));
         }
-        if (grounded)
+        if (!grounded) return;
+        Vector3 frictionVector = new Vector3(dir.x * friction,0,0);
+        if (dir.x != 0)
         {
-            Vector3 frictionVector = new Vector3(dir.x * friction,0,0);
-            if (dir.x != 0)
-            {
-                dir -= frictionVector*Time.fixedDeltaTime;
-            }
+            dir -= frictionVector*Time.fixedDeltaTime;
         }
     }
     void CheckInput()
@@ -136,59 +121,35 @@ public class Player_Move : MonoBehaviour
     void ChargeJump()
     {
         float mousePos = Input.mousePosition.x;
-        if (Input.GetMouseButtonDown(0) && grounded)
+        if (Input.GetMouseButtonDown(0))
         {
-            // removes previous momentum
+            if (!grounded && !sticky) return;
             dir = Vector3.zero;
         }
-        if (Input.GetMouseButton(0) && grounded)
+        if (Input.GetMouseButton(0))
         {
-            //Limits jump force to assigned max value
-            if (forceAdded.magnitude < maxJump.magnitude)
-            {
-                forceAdded += jumpDir * (jumpForce * Time.fixedDeltaTime);   
-            }
+            if (!grounded && !sticky) return;
+            // Limits jump force to assigned max value
+             if (forceAdded.magnitude < maxJump.magnitude)
+             {
+                 forceAdded += jumpDir * (jumpForce * Time.fixedDeltaTime);   
+             }
         }
-        if (Input.GetMouseButtonUp(0) && grounded)
+        if (Input.GetMouseButtonUp(0))
         {
+            if (!grounded && !sticky) return;
             //Checks screen position of the cursor and calls jump with..
             //  it's corresponding value then resets forceAdded to zero
-            if(mousePos < Screen.width/2f)
+            switch (mousePos)
             {
-                Jump(forceAdded,0);
-                forceAdded = Vector3.zero;
-            }else
-            {
-                Jump(forceAdded,1);
-                forceAdded = Vector3.zero;
-            }
-        }
-
-        if (Input.GetMouseButtonDown(0) && sticky)
-        {
-            // removes previous momentum
-            dir = Vector3.zero;
-        }
-        if (Input.GetMouseButton(0) && sticky)
-        {
-            //Limits jump force to assigned max value
-            if (forceAdded.magnitude < maxJump.magnitude)
-            {
-                forceAdded += jumpDir * (jumpForce * Time.fixedDeltaTime);   
-            }
-        }
-        if (Input.GetMouseButtonUp(0) && sticky)
-        {
-            //Checks screen position of the cursor and calls jump with..
-            //  it's corresponding value then resets forceAdded to zero
-            if(mousePos < Screen.width/2f)
-            {
-                Jump(forceAdded,0);
-                forceAdded = Vector3.zero;
-            }else
-            {
-                Jump(forceAdded,1);
-                forceAdded = Vector3.zero;
+                case float n when( n < Screen.width/2f):
+                    Jump(forceAdded,0);
+                    forceAdded = Vector3.zero;
+                    break;
+                case float n when( n > Screen.width/2f):
+                    Jump(forceAdded,1);
+                    forceAdded = Vector3.zero;
+                    break;
             }
         }
     }
@@ -214,21 +175,17 @@ public class Player_Move : MonoBehaviour
     {
         Application.targetFrameRate = 60;
         layerMask =~ LayerMask.GetMask("Player");
-        if (con == null)
+        if (con != null) return;
+        try
         {
-            try
-            {
-                con = GetComponent<CharacterController>();
-            }  catch { Debug.LogWarning("could not get CharacterController"); }
-        }
+            con = GetComponent<CharacterController>();
+        }  catch { Debug.LogWarning("could not get CharacterController"); }
         
-        if (checkPointManager == null)
+        if (checkPointManager != null) return;
+        try
         {
-            try
-            {
-                checkPointManager = GetComponent<Player_CheckPointManager>();
-            }
-            catch{ Debug.LogWarning("Could not find Player_SpawnDie");}
+            checkPointManager = GetComponent<Player_CheckPointManager>();
         }
+        catch{ Debug.LogWarning("Could not find Player_SpawnDie");}
     }
 }
