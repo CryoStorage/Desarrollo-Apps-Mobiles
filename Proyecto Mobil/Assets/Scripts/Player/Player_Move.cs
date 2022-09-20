@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 public class Player_Move : MonoBehaviour
 {
@@ -14,8 +15,10 @@ public class Player_Move : MonoBehaviour
     private bool sticky;
     private bool grounded;
     private bool wallcheck = true;
+    private bool canMove = true;
     CharacterController con;
-
+    
+    
     private Player_CheckPointManager checkPointManager;
     private LayerMask layerMask;
     // Start is called before the first frame update
@@ -31,14 +34,29 @@ public class Player_Move : MonoBehaviour
         CheckWall();
         CheckSticky();
         Move();
+        Debug.Log(canMove);
     }
     public void Respawn()
     {
-        con.Move(checkPointManager.currentCheckPoint);
-        Player_Ink.ink = 90f;
+        StartCoroutine(CorWaitForRespawn());
+        
+    }
+
+    IEnumerator CorWaitForRespawn()
+    {
+        canMove = false;
+        if (!canMove)
+        {
+            transform.Translate(checkPointManager.currentCheckPoint, Space.World);
+            Player_Ink.ink = 90f;
+        }
+        yield return new WaitForNextFrameUnit();
+        canMove = true;
+        StopCoroutine(CorWaitForRespawn());
     }
     void Move()
     {
+        if (!canMove) return;
         Gravity();
         con.Move(dir);
     }
@@ -94,7 +112,7 @@ public class Player_Move : MonoBehaviour
     private IEnumerator CorUnstickAndGround()
     {
         //unsticks the player and sets grounded to true...
-        // during the frame when jump is called.
+        //during the frame when jump is called. then returns them to normal
         sticky = false;
         wallcheck = false;
         grounded = true;
