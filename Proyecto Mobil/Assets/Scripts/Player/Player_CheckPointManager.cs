@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 public class Player_CheckPointManager : MonoBehaviour
 {
@@ -6,7 +7,7 @@ public class Player_CheckPointManager : MonoBehaviour
 
     private void Update()
     {
-        Debug.DrawRay(transform.position,currentCheckPoint,Color.magenta);
+        Debug.DrawLine(transform.position,currentCheckPoint,Color.magenta);
         // Debug.DrawLine(transform.position,currentCheckPoint,Color.cyan);
     }
 
@@ -17,9 +18,8 @@ public class Player_CheckPointManager : MonoBehaviour
     }
     private Vector3 SetSpawn(Vector3 inkPuddle)
     {
-        Vector3 respawnPoint =inkPuddle + offset;
-        Vector3 result = respawnPoint - transform.position;
-        return result;
+        Vector3 respawnPoint =inkPuddle + offset; ;
+        return respawnPoint;
     }
 
 }
