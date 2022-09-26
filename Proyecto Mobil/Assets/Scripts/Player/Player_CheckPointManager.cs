@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 public class Player_CheckPointManager : MonoBehaviour
 {
@@ -7,9 +6,8 @@ public class Player_CheckPointManager : MonoBehaviour
 
     private void Update()
     {
-        Vector3 difference = currentCheckPoint - transform.position;
-        Debug.DrawRay(transform.position,difference,Color.magenta);
-        Debug.DrawLine(transform.position,difference,Color.cyan);
+        Debug.DrawRay(transform.position,currentCheckPoint,Color.magenta);
+        // Debug.DrawLine(transform.position,currentCheckPoint,Color.cyan);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -23,4 +21,5 @@ public class Player_CheckPointManager : MonoBehaviour
         Vector3 result = respawnPoint - transform.position;
         return result;
     }
+
 }

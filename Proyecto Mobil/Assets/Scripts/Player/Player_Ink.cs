@@ -19,12 +19,23 @@ public class Player_Ink : MonoBehaviour
         ink = Mathf.Clamp(ink, 0, 100f);
         ChangeInk();
         UpdateSlider();
+        DebugKill();
     }
-
     private void LateUpdate()
     {
         CheckInk();
     }
+
+    private void DebugKill()
+    {
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            ink = 0;
+
+        }
+
+    }
+
 
     private void UpdateSlider()
     {

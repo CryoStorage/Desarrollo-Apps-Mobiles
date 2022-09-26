@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 public class Player_Move : MonoBehaviour
 {
@@ -34,24 +33,27 @@ public class Player_Move : MonoBehaviour
         CheckWall();
         CheckSticky();
         Move();
-        Debug.Log(canMove);
     }
     public void Respawn()
     {
+        StopAllCoroutines();
         StartCoroutine(CorWaitForRespawn());
         
     }
 
     IEnumerator CorWaitForRespawn()
     {
+        dir = Vector3.zero;
         canMove = false;
         if (!canMove)
         {
-            transform.Translate(checkPointManager.currentCheckPoint, Space.World);
-            Player_Ink.ink = 90f;
+            con.enabled = false;
+            transform.position = checkPointManager.currentCheckPoint;
+            Player_Ink.ink = 100f;
         }
-        yield return new WaitForNextFrameUnit();
+        yield return new WaitForEndOfFrame();
         canMove = true;
+        con.enabled = true;
         StopCoroutine(CorWaitForRespawn());
     }
     void Move()
