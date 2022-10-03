@@ -18,7 +18,7 @@ public class Player_Move : MonoBehaviour
     CharacterController con;
     
     
-    private Player_CheckPointManager checkPointManager;
+    private Player_RespawnManager _respawnManager;
     private LayerMask layerMask;
     // Start is called before the first frame update
     void Start()
@@ -34,27 +34,27 @@ public class Player_Move : MonoBehaviour
         CheckSticky();
         Move();
     }
-    public void Respawn()
+    public void Respawn(Vector3 checkPoint)
     {
         StopAllCoroutines();
-        StartCoroutine(CorWaitForRespawn());
+        StartCoroutine(CorWaitForRespawn(checkPoint));
         
     }
 
-    IEnumerator CorWaitForRespawn()
+    IEnumerator CorWaitForRespawn(Vector3 checkPoint)
     {
         dir = Vector3.zero;
         canMove = false;
         if (!canMove)
         {
             con.enabled = false;
-            transform.position = checkPointManager.currentCheckPoint;
-            Player_Ink.ink = 100f;
+            transform.position = checkPoint;
+            Player_RespawnManager.Ink = 100f;
         }
         yield return new WaitForEndOfFrame();
         canMove = true;
         con.enabled = true;
-        StopCoroutine(CorWaitForRespawn());
+        StopCoroutine(CorWaitForRespawn(checkPoint));
     }
     void Move()
     {
@@ -175,20 +175,21 @@ public class Player_Move : MonoBehaviour
     }
     void Jump(Vector3 force, int direction)
     {
-        if(direction == 1)
+        switch (direction)
         {
-            //jumps right
-            StopAllCoroutines();
-            StartCoroutine(CorUnstickAndGround());
-            dir += force*Time.fixedDeltaTime;
-        }
-        if (direction == 0)
-        {
-            //Creating new vector to invert force in x axis(jumps left)
-            Vector3 temp = new Vector3 (-force.x,force.y,force.z);
-            StopAllCoroutines();
-            StartCoroutine(CorUnstickAndGround());
-            dir += temp*Time.fixedDeltaTime;
+            case 1:
+                //jumps right
+                StopAllCoroutines();
+                StartCoroutine(CorUnstickAndGround());
+                dir += force*Time.fixedDeltaTime;
+                break;
+            case 0:
+                //Creating new vector to invert force in x axis(jumps left)
+                Vector3 temp = new Vector3 (-force.x,force.y,force.z);
+                StopAllCoroutines();
+                StartCoroutine(CorUnstickAndGround());
+                dir += temp*Time.fixedDeltaTime;
+                break;
         }
     }
     void Prepare()
@@ -201,10 +202,10 @@ public class Player_Move : MonoBehaviour
             con = GetComponent<CharacterController>();
         }  catch { Debug.LogWarning("could not get CharacterController"); }
         
-        if (checkPointManager != null) return;
+        if (_respawnManager != null) return;
         try
         {
-            checkPointManager = GetComponent<Player_CheckPointManager>();
+            _respawnManager = GetComponent<Player_RespawnManager>();
         }
         catch{ Debug.LogWarning("Could not find Player_SpawnDie");}
     }
