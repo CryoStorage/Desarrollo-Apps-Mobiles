@@ -92,7 +92,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6848811504751402805}
-  - component: {fileID: 8054706568781562697}
   - component: {fileID: 6848811504751402804}
   - component: {fileID: 6848811504751402806}
   - component: {fileID: 6453387528332377194}
@@ -120,19 +119,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8054706568781562697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6848811504751402808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3552e66c3e002c84bbd4ba57ef9ef931, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentCheckPoint: {x: 0, y: 0, z: 0}
 --- !u!114 &6848811504751402804
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,7 +132,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   jumpForce: 10
-  grounded: 0
 --- !u!114 &6848811504751402806
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -162,6 +147,7 @@ MonoBehaviour:
   inkLossRate: 2
   inkRechargeRate: 5
   inkSlider: {fileID: 0}
+  currentCheckPoint: {x: 0, y: 0, z: 0}
 --- !u!114 &6453387528332377194
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -174,6 +160,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cf8b3ef07fab594cac9f6a25127998b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sceneManager: {fileID: 0}
 --- !u!143 &6848811504751402807
 CharacterController:
   m_ObjectHideFlags: 0
