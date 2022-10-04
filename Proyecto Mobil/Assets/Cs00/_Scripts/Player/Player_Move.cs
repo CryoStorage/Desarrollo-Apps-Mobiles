@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 public class Player_Move : MonoBehaviour
@@ -16,6 +17,7 @@ public class Player_Move : MonoBehaviour
     private bool wallcheck = true;
     private bool canMove = true;
     CharacterController con;
+    public Camera cam;
     
     
     private Player_RespawnManager _respawnManager;
@@ -160,13 +162,14 @@ public class Player_Move : MonoBehaviour
             if (!grounded && !sticky) return;
             //Checks screen position of the cursor and calls jump with..
             //  it's corresponding value then resets forceAdded to zero
+            Vector3 playerScreenPos = cam.WorldToScreenPoint(transform.position);
             switch (mousePos)
             {
-                case float n when( n < Screen.width/2f):
+                case float n when( n < playerScreenPos.x):
                     Jump(forceAdded,0);
                     forceAdded = Vector3.zero;
                     break;
-                case float n when( n > Screen.width/2f):
+                case float n when( n > playerScreenPos.x):
                     Jump(forceAdded,1);
                     forceAdded = Vector3.zero;
                     break;
@@ -208,5 +211,12 @@ public class Player_Move : MonoBehaviour
             _respawnManager = GetComponent<Player_RespawnManager>();
         }
         catch{ Debug.LogWarning("Could not find Player_SpawnDie");}
+
+        if (cam != null) return;
+        try
+        {
+            cam = Camera.main;
+        }
+        catch{ Debug.Log("Could not find Camera.Main");}
     }
 }
