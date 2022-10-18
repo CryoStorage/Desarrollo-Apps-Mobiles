@@ -9,6 +9,7 @@ TagManager:
   - UnderSide
   - Ink
   - Goal
+  - Orb
   layers:
   - Default
   - TransparentFX
