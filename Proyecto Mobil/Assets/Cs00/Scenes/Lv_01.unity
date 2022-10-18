@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641258, b: 0.5748172, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -9052,8 +9052,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   endPos: {fileID: 540694113}
-  arcHeight: 2
-  density: 3
+  arcHeight: 4
+  density: 15
   marker: {fileID: 6669695930898172857, guid: 0f841d666c511fc40b1ca848f24bdd76, type: 3}
   toInstantiate: {fileID: 3863111762138274721, guid: 77c23184fd46f3a458f869adcc1ca7e2, type: 3}
 --- !u!1 &1737770901
