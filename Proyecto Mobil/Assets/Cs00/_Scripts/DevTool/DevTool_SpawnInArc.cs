@@ -46,30 +46,19 @@ public class DevTool_SpawnInArc : MonoBehaviour
         List<Vector3> arcPositions = new List<Vector3>();
 
         float flatPlane = Vector3.Distance(transform.position, endPos.transform.position);
-        Debug.Log(flatPlane);
         for (int i = 0; i < density; i++)
         {
             // Compute the next position, with arc added in
             float x0 = transform.position.x;
             float x1 = endPos.transform.position.x;
             float dist = x1 - x0;
-            float nextX = Mathf.MoveTowards(transform.position.x, x1, i);
+            float nextX = Mathf.MoveTowards(x0, x1,flatPlane /density + i);
             float baseY = Mathf.Lerp(transform.position.y, endPos.transform.position.y, (nextX - x0) / dist);
             float arc = arcHeight * (nextX - x0) * (nextX - x1) / (-0.25f * dist * dist);
             arcPositions.Add(new Vector3(nextX, baseY + arc, transform.position.z));
         }
-        return arcPositions;
-    }
 
-    private List<Vector3> CustomArc()
-    {
-        List<Vector3> arcPositions = new List<Vector3>();
-        for (int i = 0; i < density; i++)
-        {
-            
-            
-        }
-
+        Debug.Log(flatPlane / density);
         return arcPositions;
     }
 
